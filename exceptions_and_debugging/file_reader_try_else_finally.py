@@ -124,3 +124,41 @@ Explanation:
 =================================================
 
 """
+def read_numbers(path):
+    # Initialize tracking variables
+    total_sum = 0.0
+    lines_read = 0
+    
+    try:
+        # Open the file using 'with' as instructed
+        with open(path, 'r') as f:
+            for line in f:
+                # Strip whitespace and skip completely empty lines
+                cleaned_line = line.strip()
+                if not cleaned_line:
+                    continue
+                
+                # Convert to float and add to sum
+                total_sum += float(cleaned_line)
+                lines_read += 1
+                
+    except FileNotFoundError:
+        return ("error", "file path is wrong", lines_read)
+        
+    except PermissionError:
+        return ("error", "file cannot be read", lines_read)
+        
+    except ValueError:
+        return ("error", "-a line is not a number", lines_read)
+        
+    except Exception as e:
+        return ("error", str(e), lines_read)
+        
+    else:
+        # Runs ONLY if no exception occurred during the try block
+        return ("ok", total_sum, lines_read)
+        
+    finally:
+        # ALWAYS runs no matter what
+        print("Done reading")
+            
