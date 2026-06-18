@@ -137,3 +137,88 @@ Explanation:
 =================================================
 
 """
+def process_records(records):
+    clean_records = []
+    error_log = []
+    
+    for index, record in enumerate(records):
+        try:
+            # 1. Type validation (must be a dictionary)
+            if not isinstance(record, dict):
+                raise TypeError("string indices must be integers")
+                
+            # 2. Key validation (must have "name", "age", "score")
+            # Using basic lookup to naturally trigger KeyError if missing
+            name = record["name"]
+            age_str = record["age"]
+            score_str = record["score"]
+            
+            # 3. Value conversion (must be numeric strings)
+            age = int(age_str)
+            score = float(score_str)
+            
+            # Reconstruct valid clean record format
+            clean_rec = {"name": name, "age": age, "score": score}
+            
+        except ValueError as e:
+            # Captures conversion failures (e.g., int("abc"))
+            error_log.append((index, "ValueError", str(e)))
+            
+        except KeyError as e:
+            # Captures missing keys (e.g., missing "score")
+            error_log.append((index, "KeyError", str(e)))
+            
+        except TypeError as e:
+            # Captures wrong types (e.g., plain string item)
+            error_log.append((index, "TypeError", str(e)))
+            
+        else:
+            # Runs only if no exceptions were raised
+            clean_records.append(clean_rec)
+            
+    return clean_records, error_log
+
+
+def process_strict(records):
+    # Call the first function to get processed results
+    clean_records, error_log = process_records(records)
+    
+    # Check if any errors occurred
+    if error_log:
+        num_failures = len(error_log)
+        # Suppress original traceback chain by using "from None"
+        raise RuntimeError(f"{num_failures} record(s) failed to process") from None
+        
+    return clean_records, error_log
+
+
+# --- DRIVER CODE (To test and display output matching your example) ---
+if __name__ == "__main__":
+    # Input example from the image instructions
+    input_records = [
+        {"name": "Alice", "age": "25", "score": "88.5"},
+        {"name": "Bob", "age": "abc", "score": "70"},       # ValueError
+        {"name": "Carol", "age": "30"},                     # KeyError (missing score)
+        "not a dict",                                       # TypeError
+        {"name": "Dan", "age": "40", "score": "55.5"}
+    ]
+
+    try:
+        # Call strict function inside a try/except driver block
+        clean, errors = process_strict(input_records)
+        
+        # This won't execute if strict mode raises an error, 
+        # but satisfies standard print requirements
+        print("Clean Records:\n", clean)
+        print("Error Log:\n", errors)
+        
+    except RuntimeError as ex:
+        # Re-run normal process to get lists for printing
+        clean, errors = process_records(input_records)
+        
+        print("Clean Records:")
+        print(clean)
+        print("\nError Log:")
+        print(errors)
+        print(f"\nStrict mode raised: RuntimeError: {ex}")
+            
